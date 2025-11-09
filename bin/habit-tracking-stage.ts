@@ -1,5 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
+import type { Construct } from 'constructs';
+import { EventMessagingStack } from '../lib/stacks/event-messaging-stack';
 import { HabitTrackingApiStack } from '../lib/stacks/habit-tracking-api-stack';
 
 export interface HabitTrackingStageProps extends cdk.StageProps {
@@ -10,11 +11,10 @@ export class HabitTrackingStage extends cdk.Stage {
   constructor(scope: Construct, id: string, props: HabitTrackingStageProps) {
     super(scope, id, props);
 
-    const apiStack = new HabitTrackingApiStack(
-      this,
-      'HabitTrackingApiStack',
-      props
-    );
+    const apiStack = new HabitTrackingApiStack(this, 'HabitTrackingApiStack', props);
+    const eventMessagingStack = new EventMessagingStack(this, 'HabitTrackingEventStack', props);
+
+    // eventMessagingStack.addDependency(apiStack);
 
     cdk.Tags.of(this).add('environment', props.environmentName);
     cdk.Tags.of(apiStack).add('system', 'api');

@@ -31,14 +31,14 @@ jobs:
     - name: TypeScript compilation check
       run: npm run build
       
-    - name: Run ESLint
+    - name: Run ESLint (linting only)
       run: npm run lint:check
       
-    - name: Run Biome linter
-      run: npx @biomejs/biome lint .
-      
     - name: Run Biome formatter check
-      run: npx @biomejs/biome format . --write=false
+      run: npm run format:check
+      
+    - name: Run Biome linter
+      run: npm run biome:check
       
     - name: Run tests
       run: npm test
@@ -106,8 +106,8 @@ jobs:
       run: npm audit --audit-level=high
       continue-on-error: true
       
-    - name: Run Biome security linter
-      run: npx @biomejs/biome lint . --apply=off
+    - name: Run comprehensive code check
+      run: npm run code:check
       continue-on-error: true
 
   build-summary:

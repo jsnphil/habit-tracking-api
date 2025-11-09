@@ -13,6 +13,6 @@ new HabitTrackingStage(app, 'Dev', {
   environmentName: environment,
   env: {
     account,
-    region
-  }
+    region,
+  },
 });
