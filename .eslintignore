@@ -1,13 +1,11 @@
 # Build outputs
-*.js
-*.js.map
-*.d.ts
-bin/
-lib/*.js
-lib/*.d.ts
-lib/*.js.map
+**/*.js
+**/*.js.map
+**/*.d.ts
 
-# CDK outputs
+# Specific build directories
+bin/
+lib/
 cdk.out/
 .cdk.staging/
 
