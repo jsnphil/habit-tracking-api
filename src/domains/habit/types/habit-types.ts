@@ -19,11 +19,3 @@ export type DayOfWeek =
   | 'Friday'
   | 'Saturday'
   | 'Sunday';
-
-// Status tracking
-export interface DailyStatusRecord {
-  date: string; // ISO date string YYYY-MM-DD
-  status: CompletionStatus;
-  recordedAt: Date;
-  note?: string;
-}

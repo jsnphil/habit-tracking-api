@@ -33,7 +33,14 @@ export class MeasuredHabit extends Habit {
     schedule: HabitSchedule,
     cue: HabitCue
   ): MeasuredHabit {
-    return new MeasuredHabit(name, description, targetType, quantity, schedule, cue);
+    return new MeasuredHabit(
+      name,
+      description,
+      targetType,
+      quantity,
+      schedule,
+      cue
+    );
   }
 
   setProgress(date: Date, value: number): void {
