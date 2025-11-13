@@ -4,8 +4,20 @@ export class HabitCue {
   readonly id: string;
   readonly description: string;
 
-  constructor(description: string) {
+  private constructor(description: string) {
     this.id = uuidv4();
     this.description = description;
+  }
+
+  static create(description: string): HabitCue {
+    if (!description || description.trim().length === 0) {
+      throw new Error('Cue description cannot be empty');
+    }
+
+    return new HabitCue(description.trim());
+  }
+
+  getDescription(): string {
+    return this.description;
   }
 }

@@ -1,33 +1,265 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { CompletionHabit } from './completion-habit';
+import { HabitCue } from './habit-cue';
+import { HabitFrequency } from './habit-frequency';
+import { HabitSchedule } from './habit-schedule';
 
 // We recommend installing an extension to run vitest tests.
 
-describe('CompletionHabit.create', () => {
-    it('creates a CompletionHabit instance with the provided name and description', () => {
-        const name = 'Read a book';
-        const description = 'Read 20 pages every day';
-        const habit = CompletionHabit.create(name, description);
+describe('CompletionHabit', () => {
+  describe('constructor', () => {
+    it('should create daily completion habit', () => {
+      const name = 'Read every day';
+      const description = 'Read every day';
 
-        expect(habit).toBeInstanceOf(CompletionHabit);
-        expect(habit.type).toBe('completion');
+      const frequency = HabitFrequency.create('daily');
+      const schedule = HabitSchedule.create(new Date(), frequency);
 
-        // Access as any to avoid depending on the exact visibility of properties on the base class
-        expect((habit as any).name).toBe(name);
-        expect((habit as any).description).toBe(description);
+      const habit = CompletionHabit.create(name, description, schedule);
+
+      expect(habit).toBeInstanceOf(CompletionHabit);
+      expect(habit.getType()).toBe('completion');
+      expect(habit.getName()).toBe(name);
+      expect(habit.getDescription()).toBe(description);
+      expect(habit.getStatus()).toBe('active');
+      expect(habit.getSchedule()).toEqual(schedule);
     });
 
-    it('returns a distinct instance on each call', () => {
-        const h1 = CompletionHabit.create('Exercise', 'Do 30 minutes');
-        const h2 = CompletionHabit.create('Exercise', 'Do 30 minutes');
+    it('should create a daily completion habit with cue and note', () => {
+      const name = 'Read every day';
+      const description = 'Read every day';
+      const frequency = HabitFrequency.create('daily');
+      const schedule = HabitSchedule.create(new Date(), frequency);
+      const cue = HabitCue.create('Before bed');
+      const obsidianNoteName = 'Daily Reading';
 
-        expect(h1).not.toBe(h2);
+      const habit = CompletionHabit.create(
+        name,
+        description,
+        schedule,
+        cue,
+        obsidianNoteName
+      );
+
+      expect(habit).toBeInstanceOf(CompletionHabit);
+      expect(habit.getType()).toBe('completion');
+      expect(habit.getName()).toBe(name);
+      expect(habit.getDescription()).toBe(description);
+      expect(habit.getStatus()).toBe('active');
+      expect(habit.getSchedule()).toEqual(schedule);
+      expect(habit.getCue()).toEqual(cue);
+      expect(habit.getObsidianNoteName()).toBe(obsidianNoteName);
     });
 
-    it('accepts empty strings for name and description', () => {
-        const empty = CompletionHabit.create('', '');
-        expect((empty as any).name).toBe('');
-        expect((empty as any).description).toBe('');
-        expect(empty.type).toBe('completion');
+    it('should not allow empty name', () => {
+      const description = 'Read every day';
+      const frequency = HabitFrequency.create('daily');
+      const schedule = HabitSchedule.create(new Date(), frequency);
+
+      expect(() => CompletionHabit.create('', description, schedule)).toThrow(
+        'Habit name cannot be empty'
+      );
     });
+
+    it('should not allow missing schedule', () => {
+      const name = 'Read every day';
+      const description = 'Read every day';
+
+      expect(() =>
+        // biome-ignore lint/suspicious/noExplicitAny: Forcing undefined schedule
+        CompletionHabit.create(name, description, undefined as any)
+      ).toThrow('Habit must have a schedule');
+    });
+  });
+
+  describe('setName', () => {
+    it('should update the name', () => {
+      const habit = CompletionHabit.create(
+        'Read',
+        'Read every day',
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily'))
+      );
+
+      habit.setName('Read every night');
+
+      expect(habit.getName()).toBe('Read every night');
+    });
+
+    it('should not allow empty name', () => {
+      const habit = CompletionHabit.create(
+        'Read',
+        'Read every day',
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily'))
+      );
+
+      expect(() => habit.setName('')).toThrow('Habit name cannot be empty');
+    });
+  });
+
+  describe('markCompleted', () => {
+    it('should mark a habit as completed for a specific date', () => {
+      const habit = CompletionHabit.create(
+        'Read',
+        'Read every day',
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily'))
+      );
+
+      const date = new Date('2024-01-01');
+      habit.markCompleted(date);
+      expect(habit.getCompletionStatus(date)).toBe('completed');
+    });
+
+    it('should not allow marking completion for an archived habit', () => {
+      const habit = CompletionHabit.create(
+        'Read',
+        'Read every day',
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily'))
+      );
+
+      habit.setStatus('archived');
+      expect(() => habit.markCompleted(new Date())).toThrow(
+        'Cannot mark completion for an archived habit'
+      );
+    });
+
+    it('should not allow marking completion for an inactive habit', () => {
+      const habit = CompletionHabit.create(
+        'Read',
+        'Read every day',
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily'))
+      );
+
+      habit.setStatus('inactive');
+      expect(() => habit.markCompleted(new Date())).toThrow(
+        'Cannot mark completion for an inactive habit'
+      );
+    });
+
+    it('should not allow marking completion more than once per day', () => {
+      const habit = CompletionHabit.create(
+        'Read',
+        'Read every day',
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily'))
+      );
+
+      const date = new Date('2024-01-01');
+      habit.markCompleted(date);
+      expect(() => habit.markCompleted(date)).toThrow(
+        'Status for 2024-01-01 already recorded. Habits can only be completed once per day.'
+      );
+    });
+  });
+
+  describe('markMissed', () => {
+    it('should mark a habit as missed for a specific date', () => {
+      const habit = CompletionHabit.create(
+        'Read',
+        'Read every day',
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily'))
+      );
+
+      const date = new Date('2024-01-01');
+      habit.markMissed(date);
+      expect(habit.getCompletionStatus(date)).toBe('missed');
+    });
+
+    it('should not allow marking missed for an archived habit', () => {
+      const habit = CompletionHabit.create(
+        'Read',
+        'Read every day',
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily'))
+      );
+
+      habit.setStatus('archived');
+      expect(() => habit.markMissed(new Date())).toThrow(
+        'Cannot mark missed for an archived habit'
+      );
+    });
+
+    it('should not allow marking missed for an inactive habit', () => {
+      const habit = CompletionHabit.create(
+        'Read',
+        'Read every day',
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily'))
+      );
+
+      habit.setStatus('inactive');
+      expect(() => habit.markMissed(new Date())).toThrow(
+        'Cannot mark missed on an inactive habit'
+      );
+    });
+
+    it('should not allow marking missed more than once per day', () => {
+      const habit = CompletionHabit.create(
+        'Read',
+        'Read every day',
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily'))
+      );
+
+      const date = new Date('2024-01-01');
+      habit.markMissed(date);
+      expect(habit.getCompletionStatus(date)).toBe('missed');
+
+      expect(() => habit.markMissed(date)).toThrow(
+        'Status for 2024-01-01 already recorded. Habits can only be marked once per day.'
+      );
+    });
+  });
+
+  describe('markSkipped', () => {
+    it('should mark a habit as skipped for a specific date', () => {
+      const habit = CompletionHabit.create(
+        'Read',
+        'Read every day',
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily'))
+      );
+
+      const date = new Date('2024-01-01');
+      habit.markSkipped(date);
+      expect(habit.getCompletionStatus(date)).toBe('skipped');
+    });
+
+    it('should not allow marking skipped for an archived habit', () => {
+      const habit = CompletionHabit.create(
+        'Read',
+        'Read every day',
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily'))
+      );
+
+      habit.setStatus('archived');
+      expect(() => habit.markSkipped(new Date())).toThrow(
+        'Cannot mark skipped for an archived habit'
+      );
+    });
+
+    it('should not allow marking skipped for an inactive habit', () => {
+      const habit = CompletionHabit.create(
+        'Read',
+        'Read every day',
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily'))
+      );
+
+      habit.setStatus('inactive');
+      expect(() => habit.markSkipped(new Date())).toThrow(
+        'Cannot mark skipped on an inactive habit'
+      );
+    });
+
+    it('should not allow marking skipped more than once per day', () => {
+      const habit = CompletionHabit.create(
+        'Read',
+        'Read every day',
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily'))
+      );
+
+      const date = new Date('2024-01-01');
+
+      habit.markSkipped(date);
+      expect(habit.getCompletionStatus(date)).toBe('skipped');
+
+      expect(() => habit.markSkipped(date)).toThrow(
+        'Status for 2024-01-01 already recorded. Habits can only be marked once per day.'
+      );
+    });
+  });
 });

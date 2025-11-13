@@ -6,6 +6,7 @@ export default defineConfig({
     environment: 'node',
     include: ['**/*.test.ts'],
     coverage: {
+      enabled: true,
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       exclude: [
@@ -15,7 +16,14 @@ export default defineConfig({
         '**/*.d.ts',
         'bin/',
         'lib/**/*.js'
-      ]
+      ],
+      thresholds: {
+        autoUpdate: true,
+        branches: 100,
+        statements: 100,
+        functions: 100,
+        perFile: true
+      }
     }
   }
 });
