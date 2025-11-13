@@ -6,7 +6,6 @@ export default defineConfig({
     environment: 'node',
     include: ['**/*.test.ts'],
     coverage: {
-      enabled: true,
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       exclude: [

@@ -5,7 +5,7 @@ export class HabitQuantity {
   readonly unit: string;
   readonly targetType: MeasuredTargetType;
 
-  constructor(
+  private constructor(
     targetAmount: number,
     unit: string,
     targetType: MeasuredTargetType
@@ -17,5 +17,13 @@ export class HabitQuantity {
     this.targetAmount = targetAmount;
     this.unit = unit;
     this.targetType = targetType;
+  }
+
+  static create(
+    targetAmount: number,
+    unit: string,
+    targetType: MeasuredTargetType
+  ): HabitQuantity {
+    return new HabitQuantity(targetAmount, unit, targetType);
   }
 }

@@ -120,6 +120,34 @@ export abstract class Habit {
     );
   }
 
+  activate() {
+    if (this.status === 'active') {
+      throw new Error('Habit is already active');
+    }
+    this.status = 'active';
+  }
+
+  deactivate() {
+    if (this.status === 'inactive') {
+      throw new Error('Habit is already inactive');
+    }
+    this.status = 'inactive';
+  }
+
+  archive() {
+    if (this.status === 'archived') {
+      throw new Error('Habit is already archived');
+    }
+    this.status = 'archived';
+  }
+
+  unarchive() {
+    if (this.status !== 'archived') {
+      throw new Error('Only archived habits can be unarchived');
+    }
+    this.status = 'active';
+  }
+
   abstract markCompleted(date: Date): void;
   abstract markMissed(date: Date): void;
 

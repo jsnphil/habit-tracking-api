@@ -1,18 +1,15 @@
-import type { MeasuredTargetType } from '../types';
 import { Habit } from './habit';
 import type { HabitCue } from './habit-cue';
 import type { HabitQuantity } from './habit-quantity';
 import type { HabitSchedule } from './habit-schedule';
 
 export class MeasuredHabit extends Habit {
-  private targetType: MeasuredTargetType;
   private progressRecords: Map<string, number> = new Map();
   private quantity: HabitQuantity;
 
   private constructor(
     name: string,
     description: string,
-    targetType: MeasuredTargetType,
     quantity: HabitQuantity,
     schedule: HabitSchedule,
     cue: HabitCue
@@ -21,26 +18,17 @@ export class MeasuredHabit extends Habit {
     if (!quantity) {
       throw new Error('Measured habits must have a quantity');
     }
-    this.targetType = targetType;
     this.quantity = quantity;
   }
 
   static create(
     name: string,
     description: string,
-    targetType: MeasuredTargetType,
     quantity: HabitQuantity,
     schedule: HabitSchedule,
     cue: HabitCue
   ): MeasuredHabit {
-    return new MeasuredHabit(
-      name,
-      description,
-      targetType,
-      quantity,
-      schedule,
-      cue
-    );
+    return new MeasuredHabit(name, description, quantity, schedule, cue);
   }
 
   setProgress(date: Date, value: number): void {
@@ -88,7 +76,10 @@ export class MeasuredHabit extends Habit {
       return;
     }
 
-    if (this.targetType === 'goal' && progress >= this.quantity.targetAmount) {
+    if (
+      this.quantity.targetType === 'goal' &&
+      progress >= this.quantity.targetAmount
+    ) {
       this.completionRecords.set(dateKey, 'completed');
     }
   }
