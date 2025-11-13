@@ -68,7 +68,7 @@ export class MeasuredHabit extends Habit {
     this.checkCompletion(date);
   }
 
-  private checkCompletion(date: Date): void {
+  checkCompletion(date: Date): void {
     const dateKey = date.toISOString().split('T')[0];
     const progress = this.progressRecords.get(dateKey);
 
@@ -81,12 +81,23 @@ export class MeasuredHabit extends Habit {
       progress >= this.quantity.targetAmount
     ) {
       this.completionRecords.set(dateKey, 'completed');
+    } else {
+      this.completionRecords.set(dateKey, 'committed');
     }
   }
 
   getProgress(date: Date): number | null {
     const dateKey = date.toISOString().split('T')[0];
-    return this.progressRecords.get(dateKey) || null;
+
+    if (this.progressRecords.has(dateKey)) {
+      return this.progressRecords.get(dateKey) || 0;
+    }
+
+    if (this.quantity.targetType === 'limit') {
+      return this.quantity.targetAmount;
+    } else {
+      return 0;
+    }
   }
 
   markCompleted(_date: Date) {
