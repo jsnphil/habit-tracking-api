@@ -15,9 +15,6 @@ export class MeasuredHabit extends Habit {
     cue: HabitCue
   ) {
     super(name, description, 'measured', schedule, cue, undefined);
-    if (!quantity) {
-      throw new Error('Measured habits must have a quantity');
-    }
     this.quantity = quantity;
   }
 
