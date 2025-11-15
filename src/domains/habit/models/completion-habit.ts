@@ -51,7 +51,7 @@ export class CompletionHabit extends Habit {
       throw new Error('Cannot mark missed for an archived habit');
     }
     if (this.getStatus() !== 'active') {
-      throw new Error('Cannot mark missed on an inactive habit');
+      throw new Error('Cannot mark missed for an inactive habit');
     }
 
     const dateKey = date.toISOString().split('T')[0];
