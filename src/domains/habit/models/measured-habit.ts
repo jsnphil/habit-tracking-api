@@ -12,7 +12,7 @@ export class MeasuredHabit extends Habit {
     description: string,
     quantity: HabitQuantity,
     schedule: HabitSchedule,
-    cue: HabitCue
+    cue?: HabitCue
   ) {
     super(name, description, 'measured', schedule, cue, undefined);
     this.quantity = quantity;
@@ -23,7 +23,7 @@ export class MeasuredHabit extends Habit {
     description: string,
     quantity: HabitQuantity,
     schedule: HabitSchedule,
-    cue: HabitCue
+    cue?: HabitCue
   ): MeasuredHabit {
     return new MeasuredHabit(name, description, quantity, schedule, cue);
   }
@@ -93,18 +93,13 @@ export class MeasuredHabit extends Habit {
     }
   }
 
-  getProgress(date: Date): number | null {
+  getProgress(date: Date): number {
     const dateKey = date.toISOString().split('T')[0];
 
     if (this.progressRecords.has(dateKey)) {
       return this.progressRecords.get(dateKey) || 0;
     }
-
-    if (this.quantity.targetType === 'limit') {
-      return this.quantity.targetAmount;
-    } else {
-      return 0;
-    }
+    return 0;
   }
 
   markCompleted(_date: Date): void {

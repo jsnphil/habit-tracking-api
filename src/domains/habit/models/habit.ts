@@ -121,23 +121,21 @@ export abstract class Habit {
   }
 
   activate() {
-    if (this.status === 'active') {
-      throw new Error('Habit is already active');
+    if (this.status === 'archived') {
+      throw new Error('Cannot activate an archived habit. Unarchive it first.');
     }
     this.status = 'active';
   }
 
   deactivate() {
-    if (this.status === 'inactive') {
-      throw new Error('Habit is already inactive');
+    if (this.status === 'archived') {
+      throw new Error('Cannot deactivate an archived habit');
     }
     this.status = 'inactive';
   }
 
   archive() {
-    if (this.status === 'archived') {
-      throw new Error('Habit is already archived');
-    }
+    // Idempotent operation - archiving is always valid regardless of current status
     this.status = 'archived';
   }
 

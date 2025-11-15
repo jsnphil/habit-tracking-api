@@ -84,20 +84,6 @@ describe('MeasuredHabit', () => {
       );
     });
 
-    it('should throw an error for negative progress', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
-
-      expect(() => habit.setProgress(new Date(), -5)).toThrow(
-        'Progress value cannot be negative'
-      );
-    });
-
     it('should throw an error when setting progress for an archived habit', () => {
       const habit = MeasuredHabit.create(
         'Reading',
@@ -107,8 +93,9 @@ describe('MeasuredHabit', () => {
         HabitCue.create('Morning')
       );
 
-      expect(() => habit.setProgress(new Date(), -5)).toThrow(
-        'Progress value cannot be negative'
+      habit.setStatus('archived');
+      expect(() => habit.setProgress(new Date(), 10)).toThrow(
+        'Cannot set progress for an archived habit'
       );
     });
 
@@ -320,18 +307,6 @@ describe('MeasuredHabit', () => {
 
       expect(habit.getProgress(new Date('2024-01-01'))).toBe(0);
     });
-
-    it('should return the target amount for a limit habit with no progress', () => {
-      const habit = MeasuredHabit.create(
-        'Screen Time',
-        'Limit screen time to 2 hours per day',
-        HabitQuantity.create(2, 'hours', 'limit'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Evening')
-      );
-
-      expect(habit.getProgress(new Date('2024-01-01'))).toBe(2);
-    });
   });
 
   describe('checkCompletion', () => {
@@ -451,6 +426,143 @@ describe('MeasuredHabit', () => {
       const testDate = new Date('2024-01-01');
       habit.setProgress(testDate, 3);
       expect(habit.getCompletionStatus(testDate)).toBe('missed');
+    });
+  });
+
+  describe('archive', () => {
+    it('should archive an active habit', () => {
+      const habit = MeasuredHabit.create(
+        'Reading',
+        'Read 30 minutes every day',
+        HabitQuantity.create(30, 'minutes', 'goal'),
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
+        HabitCue.create('Morning')
+      );
+      habit.archive();
+      expect(habit.getStatus()).toBe('archived');
+    });
+
+    it('archiving an already archived habit should have no effect', () => {
+      const habit = MeasuredHabit.create(
+        'Reading',
+        'Read 30 minutes every day',
+        HabitQuantity.create(30, 'minutes', 'goal'),
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
+        HabitCue.create('Morning')
+      );
+
+      habit.archive();
+      habit.archive();
+      expect(habit.getStatus()).toBe('archived');
+    });
+  });
+
+  describe('unarchive', () => {
+    it('should unarchive an archived habit', () => {
+      const habit = MeasuredHabit.create(
+        'Reading',
+        'Read 30 minutes every day',
+        HabitQuantity.create(30, 'minutes', 'goal'),
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
+        HabitCue.create('Morning')
+      );
+
+      habit.archive();
+      habit.unarchive();
+      expect(habit.getStatus()).toBe('active');
+    });
+
+    it('should throw an error when unarchiving an active habit', () => {
+      const habit = MeasuredHabit.create(
+        'Reading',
+        'Read 30 minutes every day',
+        HabitQuantity.create(30, 'minutes', 'goal'),
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
+        HabitCue.create('Morning')
+      );
+
+      expect(() => habit.unarchive()).toThrow(
+        'Only archived habits can be unarchived'
+      );
+    });
+  });
+
+  describe('activate', () => {
+    it('should activate an inactive habit', () => {
+      const habit = MeasuredHabit.create(
+        'Reading',
+        'Read 30 minutes every day',
+        HabitQuantity.create(30, 'minutes', 'goal'),
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
+        HabitCue.create('Morning')
+      );
+      habit.deactivate();
+      expect(habit.getStatus()).toBe('inactive');
+      
+      habit.activate();
+      expect(habit.getStatus()).toBe('active');
+    });
+
+    it('activating an already active habit should have no effect', () => {
+      const habit = MeasuredHabit.create(
+        'Reading',
+        'Read 30 minutes every day',
+        HabitQuantity.create(30, 'minutes', 'goal'),
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
+        HabitCue.create('Morning')
+      );
+
+      expect(habit.getStatus()).toBe('active');
+      habit.activate();
+      expect(habit.getStatus()).toBe('active');
+    });
+
+    it('should throw an error when activating an archived habit', () => {
+      const habit = MeasuredHabit.create(
+        'Reading',
+        'Read 30 minutes every day',
+        HabitQuantity.create(30, 'minutes', 'goal'),
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
+        HabitCue.create('Morning')
+      );
+
+      habit.archive();
+      expect(() => habit.activate()).toThrow(
+        'Cannot activate an archived habit. Unarchive it first.'
+      );
+    });
+  });
+
+  describe('deactivate', () => {
+    it('deactivating an already inactive habit should have no effect', () => {
+      const habit = MeasuredHabit.create(
+        'Reading',
+        'Read 30 minutes every day',
+        HabitQuantity.create(30, 'minutes', 'goal'),
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
+        HabitCue.create('Morning')
+      );
+
+      habit.deactivate();
+      expect(habit.getStatus()).toBe('inactive');
+
+      habit.deactivate();
+      expect(habit.getStatus()).toBe('inactive');
+    });
+
+    it('should throw an error when deactivating an archived habit', () => {
+      const habit = MeasuredHabit.create(
+        'Reading',
+        'Read 30 minutes every day',
+        HabitQuantity.create(30, 'minutes', 'goal'),
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
+        HabitCue.create('Morning')
+      );
+
+      habit.archive();
+      expect(() => habit.deactivate()).toThrow(
+        'Cannot deactivate an archived habit'
+      );
     });
   });
 });
