@@ -114,21 +114,7 @@ describe('MeasuredHabit', () => {
       );
     });
 
-    it('should throw an error when setting progress for an archived habit', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
-
-      habit.setStatus('archived');
-      expect(() => habit.setProgress(new Date(), 10)).toThrow(
-        'Cannot set progress for an archived habit'
-      );
-    });
-
+    // Removed duplicate test: 'should throw an error when setting progress for an archived habit'
     it('should throw an error when adding progress for an archived habit', () => {
       const habit = MeasuredHabit.create(
         'Reading',
