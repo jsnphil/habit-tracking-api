@@ -10,9 +10,9 @@ const account = '101639835597';
 const region = 'us-east-1';
 
 new HabitTrackingStage(app, 'Dev', {
-	environmentName: environment,
-	env: {
-		account,
-		region,
-	},
+  environmentName: environment,
+  env: {
+    account,
+    region
+  }
 });

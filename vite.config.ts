@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['test/**/*.test.ts'],
+    include: ['**/*.test.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -15,7 +15,13 @@ export default defineConfig({
         '**/*.d.ts',
         'bin/',
         'lib/**/*.js'
-      ]
+      ],
+      thresholds: {
+        branches: 90,
+        statements: 90,
+        functions: 90,
+        perFile: true
+      }
     }
   }
 });
