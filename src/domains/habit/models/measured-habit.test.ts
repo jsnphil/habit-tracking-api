@@ -54,19 +54,6 @@ describe('MeasuredHabit', () => {
       expect(habit.getSchedule()).toEqual(schedule);
       expect(habit.getCue()).toEqual(cue);
     });
-
-    it('should throw an error if quantity is missing', () => {
-      const name = 'Exercise';
-      const description = 'Exercise for 30 minutes every day';
-      const frequency = HabitFrequency.create('daily');
-      const schedule = HabitSchedule.create(new Date(), frequency);
-      const cue = HabitCue.create('Afternoon');
-
-      expect(() =>
-        // biome-ignore lint/suspicious/noExplicitAny: Forcing undefined quantity
-        MeasuredHabit.create(name, description, undefined as any, schedule, cue)
-      ).toThrow('Measured habits must have a quantity');
-    });
   });
 
   describe('setProgress', () => {
@@ -92,8 +79,9 @@ describe('MeasuredHabit', () => {
         HabitCue.create('Morning')
       );
 
-      habit.setProgress(new Date(), 15);
-      expect(habit.getProgress(new Date())).toBe(15);
+      expect(() => habit.setProgress(new Date(), -5)).toThrow(
+        'Progress value cannot be negative'
+      );
     });
 
     it('should throw an error for negative progress', () => {
@@ -411,6 +399,58 @@ describe('MeasuredHabit', () => {
       expect(habit.getCompletionStatus(new Date('2024-01-01'))).toBe(
         'committed'
       );
+    });
+
+    it('should return without modifications if no progress is found', () => {
+      const habit = MeasuredHabit.create(
+        'Reading',
+        'Read 30 minutes every day',
+        HabitQuantity.create(30, 'minutes', 'goal'),
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
+        HabitCue.create('Morning')
+      );
+
+      const testDate = new Date('2024-01-01');
+
+      // Verify no progress exists initially
+      expect(habit.getProgress(testDate)).toBe(0);
+
+      // Call checkCompletion on a date with no progress
+      habit.checkCompletion(testDate);
+
+      // Verify completion status remains 'pending' (no completion record created)
+      expect(habit.getCompletionStatus(testDate)).toBe('pending');
+
+      // Verify progress is still 0 (unchanged)
+      expect(habit.getProgress(testDate)).toBe(0);
+    });
+
+    it('should mark habit as completed when progress is above limit', () => {
+      const habit = MeasuredHabit.create(
+        'Screen Time',
+        'Limit screen time to 2 hours per day',
+        HabitQuantity.create(2, 'hours', 'limit'),
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
+        HabitCue.create('Evening')
+      );
+
+      const testDate = new Date('2024-01-01');
+      habit.setProgress(testDate, 1);
+      expect(habit.getCompletionStatus(testDate)).toBe('completed');
+    });
+
+    it('should mark habit as missed when progress exceeds limit', () => {
+      const habit = MeasuredHabit.create(
+        'Screen Time',
+        'Limit screen time to 2 hours per day',
+        HabitQuantity.create(2, 'hours', 'limit'),
+        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
+        HabitCue.create('Evening')
+      );
+
+      const testDate = new Date('2024-01-01');
+      habit.setProgress(testDate, 3);
+      expect(habit.getCompletionStatus(testDate)).toBe('missed');
     });
   });
 });

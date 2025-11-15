@@ -67,19 +67,29 @@ export class MeasuredHabit extends Habit {
 
   checkCompletion(date: Date): void {
     const dateKey = date.toISOString().split('T')[0];
-    const progress = this.progressRecords.get(dateKey);
+    const progress = this.getProgressForDate(dateKey);
 
-    if (progress === undefined) {
-      return;
+    if (progress === null) {
+      return; // No progress recorded for this date
     }
 
-    if (
-      this.quantity.targetType === 'goal' &&
-      progress >= this.quantity.targetAmount
-    ) {
-      this.completionRecords.set(dateKey, 'completed');
+    const completionStatus = this.calculateCompletionStatus(progress);
+    this.completionRecords.set(dateKey, completionStatus);
+  }
+
+  private getProgressForDate(dateKey: string): number | null {
+    return this.progressRecords.get(dateKey) ?? null;
+  }
+
+  private calculateCompletionStatus(
+    progress: number
+  ): 'completed' | 'committed' | 'missed' {
+    const targetReached = progress >= this.quantity.targetAmount;
+
+    if (this.quantity.targetType === 'goal') {
+      return targetReached ? 'completed' : 'committed';
     } else {
-      this.completionRecords.set(dateKey, 'committed');
+      return targetReached ? 'missed' : 'completed';
     }
   }
 
@@ -97,13 +107,13 @@ export class MeasuredHabit extends Habit {
     }
   }
 
-  markCompleted(_date: Date) {
+  markCompleted(_date: Date): void {
     throw new Error(
       'Measured habits cannot be marked as completed. Progress is determined automatically based on goal achievement.'
     );
   }
 
-  markMissed(_date: Date) {
+  markMissed(_date: Date): void {
     throw new Error(
       'Measured habits cannot be marked as missed. Progress is determined automatically based on goal achievement.'
     );
