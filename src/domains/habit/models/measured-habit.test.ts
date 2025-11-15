@@ -203,7 +203,7 @@ describe('MeasuredHabit', () => {
       expect(habit.getCompletionStatus(new Date())).toBe('completed');
     });
 
-    it('should marked a habit as committed when progress is made but goal is not met', () => {
+    it('should mark a habit as committed when progress is made but goal is not met', () => {
       const habit = MeasuredHabit.create(
         'Reading',
         'Read 30 minutes every day',
