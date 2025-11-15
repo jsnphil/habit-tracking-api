@@ -154,7 +154,7 @@ export abstract class Habit {
       throw new Error('Cannot mark skipped for an archived habit');
     }
     if (this.getStatus() !== 'active') {
-      throw new Error('Cannot mark skipped on an inactive habit');
+      throw new Error('Cannot mark skipped for an inactive habit');
     }
 
     const dateKey = date.toISOString().split('T')[0];
