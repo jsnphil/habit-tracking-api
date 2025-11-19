@@ -1,7 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { CompletionStatus, HabitStatus, HabitType } from '../types';
-import type { HabitCue } from './habit-cue';
-import type { HabitSchedule } from './habit-schedule';
+import type {
+  CompletionStatus,
+  HabitStatus,
+  HabitType,
+  ScheduleProps
+} from '../types';
+import { HabitCue } from './habit-cue';
+import { HabitFrequency } from './habit-frequency';
+import { HabitSchedule } from './habit-schedule';
 
 export abstract class Habit {
   private name: string;
@@ -19,11 +25,11 @@ export abstract class Habit {
     name: string,
     description: string,
     type: HabitType,
-    schedule: HabitSchedule,
-    cue?: HabitCue,
+    schedule: ScheduleProps,
+    cue?: string,
     obsidianNoteName?: string
   ) {
-    if (!name || name.trim().length === 0) {
+    if (name.trim().length === 0) {
       throw new Error('Habit name cannot be empty');
     }
 
@@ -31,13 +37,22 @@ export abstract class Habit {
       throw new Error('Habit must have a schedule');
     }
 
+    const { startDate, endDate, interval, daysOfWeek } = schedule;
+
+    const habitSchedule = HabitSchedule.create(
+      startDate,
+      HabitFrequency.create(interval, daysOfWeek),
+      endDate
+    );
+
     this.name = name.trim();
     this.description = description;
     this.type = type;
     this.id = uuidv4();
     this.status = 'active';
-    this.schedule = schedule;
-    this.cue = cue;
+    this.schedule = habitSchedule;
+
+    this.cue = cue ? HabitCue.create(cue) : undefined;
     this.obsidianNoteName = obsidianNoteName;
   }
 
@@ -82,7 +97,7 @@ export abstract class Habit {
   }
 
   setName(name: string): void {
-    if (!name || name.trim().length === 0) {
+    if (name.trim().length === 0) {
       throw new Error('Habit name cannot be empty');
     }
     this.name = name.trim();
