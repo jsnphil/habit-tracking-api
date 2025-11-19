@@ -1,0 +1,17 @@
+meta {
+  name: Create Habit
+  type: http
+  seq: 2
+}
+
+post {
+  url: https://ccldf9gpt0.execute-api.us-east-1.amazonaws.com/dev/habit-tracking/create-habit
+  body: none
+  auth: apikey
+}
+
+auth:apikey {
+  key: X-Api-Key
+  value: TLAmDMg2B72RnriFXn2bw4JXNcNF8XEA7RKllFL0
+  placement: header
+}

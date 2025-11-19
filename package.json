@@ -11,6 +11,7 @@
 		"test:watch": "vitest",
 		"test:coverage": "vitest run --coverage",
 		"cdk": "cdk",
+		"deploy-dev": "cdk deploy Dev/* --require-approval never",
 		"ci": "npm run build && npm test",
 		"check": "biome check",
 		"format": "biome format --write",
@@ -18,9 +19,10 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.3.4",
+		"@types/aws-lambda": "^8.10.159",
 		"@types/node": "^22.19.0",
 		"@vitest/coverage-v8": "^4.0.8",
-		"aws-cdk": "2.1007.0",
+		"aws-cdk": "2.1031.2",
 		"ts-node": "^10.9.2",
 		"typescript": "~5.6.3",
 		"vitest": "^4.0.8"
