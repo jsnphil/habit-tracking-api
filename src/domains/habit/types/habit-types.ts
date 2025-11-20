@@ -1,3 +1,7 @@
+// TODO: Consider adding validation functions for these types if they become complex
+// TODO: Add unit tests if type utility functions are added
+// TODO: Remove 'src/domains/habit/types/**' exclusion from vite.config.ts if testable logic is added
+
 // Habit domain-specific types
 export type HabitType = 'completion' | 'measured';
 export type MeasuredTargetType = 'goal' | 'limit';
@@ -19,3 +23,30 @@ export type DayOfWeek =
   | 'Friday'
   | 'Saturday'
   | 'Sunday';
+
+export type HabitProps = {
+  name: string;
+  description: string;
+  schedule: ScheduleProps;
+  cue?: string;
+  obsidianNoteName?: string;
+};
+
+export type CompletionHabitProps = HabitProps & {};
+
+export type MeasuredHabitProps = HabitProps & {
+  quantity: HabitQuantityProps;
+};
+
+export type HabitQuantityProps = {
+  amount: number;
+  unit: string;
+  targetType: MeasuredTargetType;
+};
+
+export type ScheduleProps = {
+  startDate: Date;
+  endDate?: Date;
+  interval: FrequencyInterval;
+  daysOfWeek?: DayOfWeek[];
+};

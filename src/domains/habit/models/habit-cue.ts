@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 
 export class HabitCue {
-  readonly id: string;
-  readonly description: string;
+  private id: string;
+  private description: string;
 
   private constructor(description: string) {
     this.id = uuidv4();
@@ -10,11 +10,16 @@ export class HabitCue {
   }
 
   static create(description: string): HabitCue {
-    if (!description || description.trim().length === 0) {
+    if (description.trim().length === 0) {
       throw new Error('Cue description cannot be empty');
     }
 
     return new HabitCue(description.trim());
+  }
+
+  /* istanbul ignore next */
+  getId(): string {
+    return this.id;
   }
 
   getDescription(): string {

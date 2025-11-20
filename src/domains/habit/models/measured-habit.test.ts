@@ -1,34 +1,41 @@
-import { describe, expect, it } from 'vitest';
-import { HabitCue } from './habit-cue';
-import { HabitFrequency } from './habit-frequency';
-import { HabitQuantity } from './habit-quantity';
-import { HabitSchedule } from './habit-schedule';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MeasuredHabit } from './measured-habit';
 
 describe('MeasuredHabit', () => {
   describe('constructor', () => {
+    beforeEach(() => {
+      vi.setSystemTime(new Date('2024-01-01T00:00:00Z'));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
     it('should create a goal habit', () => {
       const name = 'Reading';
       const description = 'Read 30 minutes every day';
 
       const target = 'goal';
-      const habitQuantity = HabitQuantity.create(30, 'minutes', target);
-      const frequency = HabitFrequency.create('daily');
-      const schedule = HabitSchedule.create(new Date(), frequency);
-      const cue = HabitCue.create('Morning');
-      const habit = MeasuredHabit.create(
+      const habit = MeasuredHabit.create({
         name,
         description,
-        habitQuantity,
-        schedule,
-        cue
-      );
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: target
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
+
       expect(habit).toBeInstanceOf(MeasuredHabit);
       expect(habit.getName()).toBe(name);
       expect(habit.getDescription()).toBe(description);
       expect(habit.getType()).toBe('measured');
-      expect(habit.getSchedule()).toEqual(schedule);
-      expect(habit.getCue()).toEqual(cue);
+      expect(habit.getCue()?.getDescription()).toEqual('Morning');
     });
 
     it('should create a habit with a target type of "limit"', () => {
@@ -36,48 +43,66 @@ describe('MeasuredHabit', () => {
       const description = 'Limit screen time to 2 hours per day';
 
       const target = 'limit';
-      const habitQuantity = HabitQuantity.create(2, 'hours', target);
-      const frequency = HabitFrequency.create('daily');
-      const schedule = HabitSchedule.create(new Date(), frequency);
-      const cue = HabitCue.create('Evening');
-      const habit = MeasuredHabit.create(
+      const habit = MeasuredHabit.create({
         name,
         description,
-        habitQuantity,
-        schedule,
-        cue
-      );
+        quantity: {
+          amount: 2,
+          unit: 'hours',
+          targetType: target
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Evening'
+      });
+
       expect(habit).toBeInstanceOf(MeasuredHabit);
       expect(habit.getName()).toBe(name);
       expect(habit.getDescription()).toBe(description);
       expect(habit.getType()).toBe('measured');
-      expect(habit.getSchedule()).toEqual(schedule);
-      expect(habit.getCue()).toEqual(cue);
+      expect(habit.getSchedule().getStartDate()).toEqual(new Date());
+      expect(habit.getCue()?.getDescription()).toEqual('Evening');
     });
   });
 
   describe('setProgress', () => {
     it('should set progress for a given date', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       habit.setProgress(new Date(), 15);
       expect(habit.getProgress(new Date())).toBe(15);
     });
 
     it('should throw an error for negative progress', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       expect(() => habit.setProgress(new Date(), -5)).toThrow(
         'Progress value cannot be negative'
@@ -85,13 +110,20 @@ describe('MeasuredHabit', () => {
     });
 
     it('should throw an error when setting progress for an archived habit', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       habit.setStatus('archived');
       expect(() => habit.setProgress(new Date(), 10)).toThrow(
@@ -100,13 +132,20 @@ describe('MeasuredHabit', () => {
     });
 
     it('should throw an error when setting progress for an inactive habit', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       habit.setStatus('inactive');
       expect(() => habit.setProgress(new Date(), 10)).toThrow(
@@ -116,13 +155,20 @@ describe('MeasuredHabit', () => {
 
     // Removed duplicate test: 'should throw an error when setting progress for an archived habit'
     it('should throw an error when adding progress for an archived habit', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       habit.setStatus('archived');
       expect(() => habit.addProgress(new Date(), 10)).toThrow(
@@ -133,26 +179,40 @@ describe('MeasuredHabit', () => {
 
   describe('addProgress', () => {
     it('should add progress for a given date', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       habit.addProgress(new Date(), 10);
       expect(habit.getProgress(new Date())).toBe(10);
     });
 
     it('should throw an error for negative progress', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       expect(() => habit.addProgress(new Date(), -5)).toThrow(
         'Progress value cannot be negative'
@@ -160,14 +220,20 @@ describe('MeasuredHabit', () => {
     });
 
     it('should throw an error when adding progress for an inactive habit', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       habit.setStatus('inactive');
       expect(() => habit.addProgress(new Date(), 10)).toThrow(
@@ -176,13 +242,20 @@ describe('MeasuredHabit', () => {
     });
 
     it('should throw an error when adding progress for an archived habit', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       habit.setStatus('archived');
       expect(() => habit.addProgress(new Date(), 10)).toThrow(
@@ -191,39 +264,60 @@ describe('MeasuredHabit', () => {
     });
 
     it('should mark habit as completed when progress meets goal', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       habit.addProgress(new Date(), 30);
       expect(habit.getCompletionStatus(new Date())).toBe('completed');
     });
 
     it('should mark a habit as committed when progress is made but goal is not met', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       habit.addProgress(new Date(), 15);
       expect(habit.getCompletionStatus(new Date())).toBe('committed');
     });
 
     it('should not change completion status if progress is updated after completion', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       habit.addProgress(new Date(), 30);
       expect(habit.getCompletionStatus(new Date())).toBe('completed');
@@ -235,13 +329,20 @@ describe('MeasuredHabit', () => {
 
   describe('markCompleted', () => {
     it('should throw an error when marking a habit as completed for a specific date', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       const date = new Date('2024-01-01');
 
@@ -253,13 +354,20 @@ describe('MeasuredHabit', () => {
 
   describe('markMissed', () => {
     it('should throw an error when marking a habit as missed for a specific date', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       const date = new Date('2024-01-01');
       expect(() => habit.markMissed(date)).toThrow(
@@ -270,26 +378,40 @@ describe('MeasuredHabit', () => {
 
   describe('getProgress', () => {
     it('should return the current progress for a given date', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       habit.setProgress(new Date('2024-01-01'), 15);
       expect(habit.getProgress(new Date('2024-01-01'))).toBe(15);
     });
 
     it('should return 0 for a date with no progress for a goal habit', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       expect(habit.getProgress(new Date('2024-01-01'))).toBe(0);
     });
@@ -297,13 +419,20 @@ describe('MeasuredHabit', () => {
 
   describe('checkCompletion', () => {
     it('should mark habit as completed when progress meets goal', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       habit.setProgress(new Date('2024-01-01'), 30);
       expect(habit.getCompletionStatus(new Date('2024-01-01'))).toBe(
@@ -312,13 +441,20 @@ describe('MeasuredHabit', () => {
     });
 
     it('should mark habit as committed when progress is made but goal is not met', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       habit.setProgress(new Date('2024-01-01'), 15);
 
@@ -328,13 +464,20 @@ describe('MeasuredHabit', () => {
     });
 
     it('should not change completion status if progress is updated after completion', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       habit.setProgress(new Date('2024-01-01'), 30);
       expect(habit.getCompletionStatus(new Date('2024-01-01'))).toBe(
@@ -343,13 +486,20 @@ describe('MeasuredHabit', () => {
     });
 
     it('should not change completion status if progress is updated after commitment', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       habit.setProgress(new Date('2024-01-01'), 15);
       expect(habit.getCompletionStatus(new Date('2024-01-01'))).toBe(
@@ -363,13 +513,20 @@ describe('MeasuredHabit', () => {
     });
 
     it('should return without modifications if no progress is found', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       const testDate = new Date('2024-01-01');
 
@@ -387,13 +544,20 @@ describe('MeasuredHabit', () => {
     });
 
     it('should mark habit as completed when progress is above limit', () => {
-      const habit = MeasuredHabit.create(
-        'Screen Time',
-        'Limit screen time to 2 hours per day',
-        HabitQuantity.create(2, 'hours', 'limit'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Evening')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Screen Time',
+        description: 'Limit screen time to 2 hours per day',
+        quantity: {
+          amount: 2,
+          unit: 'hours',
+          targetType: 'limit'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Evening'
+      });
 
       const testDate = new Date('2024-01-01');
       habit.setProgress(testDate, 1);
@@ -401,13 +565,20 @@ describe('MeasuredHabit', () => {
     });
 
     it('should mark habit as missed when progress exceeds limit', () => {
-      const habit = MeasuredHabit.create(
-        'Screen Time',
-        'Limit screen time to 2 hours per day',
-        HabitQuantity.create(2, 'hours', 'limit'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Evening')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Screen Time',
+        description: 'Limit screen time to 2 hours per day',
+        quantity: {
+          amount: 2,
+          unit: 'hours',
+          targetType: 'limit'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Evening'
+      });
 
       const testDate = new Date('2024-01-01');
       habit.setProgress(testDate, 3);
@@ -417,25 +588,40 @@ describe('MeasuredHabit', () => {
 
   describe('archive', () => {
     it('should archive an active habit', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
+
       habit.archive();
       expect(habit.getStatus()).toBe('archived');
     });
 
     it('archiving an already archived habit should have no effect', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       habit.archive();
       habit.archive();
@@ -445,13 +631,20 @@ describe('MeasuredHabit', () => {
 
   describe('unarchive', () => {
     it('should unarchive an archived habit', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       habit.archive();
       habit.unarchive();
@@ -459,13 +652,20 @@ describe('MeasuredHabit', () => {
     });
 
     it('should throw an error when unarchiving an active habit', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       expect(() => habit.unarchive()).toThrow(
         'Only archived habits can be unarchived'
@@ -475,28 +675,43 @@ describe('MeasuredHabit', () => {
 
   describe('activate', () => {
     it('should activate an inactive habit', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
+
       habit.deactivate();
       expect(habit.getStatus()).toBe('inactive');
-      
+
       habit.activate();
       expect(habit.getStatus()).toBe('active');
     });
 
     it('activating an already active habit should have no effect', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       expect(habit.getStatus()).toBe('active');
       habit.activate();
@@ -504,13 +719,20 @@ describe('MeasuredHabit', () => {
     });
 
     it('should throw an error when activating an archived habit', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       habit.archive();
       expect(() => habit.activate()).toThrow(
@@ -521,13 +743,20 @@ describe('MeasuredHabit', () => {
 
   describe('deactivate', () => {
     it('deactivating an already inactive habit should have no effect', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       habit.deactivate();
       expect(habit.getStatus()).toBe('inactive');
@@ -537,13 +766,20 @@ describe('MeasuredHabit', () => {
     });
 
     it('should throw an error when deactivating an archived habit', () => {
-      const habit = MeasuredHabit.create(
-        'Reading',
-        'Read 30 minutes every day',
-        HabitQuantity.create(30, 'minutes', 'goal'),
-        HabitSchedule.create(new Date(), HabitFrequency.create('daily')),
-        HabitCue.create('Morning')
-      );
+      const habit = MeasuredHabit.create({
+        name: 'Reading',
+        description: 'Read 30 minutes every day',
+        quantity: {
+          amount: 30,
+          unit: 'minutes',
+          targetType: 'goal'
+        },
+        schedule: {
+          startDate: new Date(),
+          interval: 'daily'
+        },
+        cue: 'Morning'
+      });
 
       habit.archive();
       expect(() => habit.deactivate()).toThrow(

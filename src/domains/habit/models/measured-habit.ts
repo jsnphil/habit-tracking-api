@@ -1,7 +1,10 @@
+import type {
+  HabitQuantityProps,
+  MeasuredHabitProps,
+  ScheduleProps
+} from '../types';
 import { Habit } from './habit';
-import type { HabitCue } from './habit-cue';
-import type { HabitQuantity } from './habit-quantity';
-import type { HabitSchedule } from './habit-schedule';
+import { HabitQuantity } from './habit-quantity';
 
 export class MeasuredHabit extends Habit {
   private progressRecords: Map<string, number> = new Map();
@@ -10,21 +13,21 @@ export class MeasuredHabit extends Habit {
   private constructor(
     name: string,
     description: string,
-    quantity: HabitQuantity,
-    schedule: HabitSchedule,
-    cue?: HabitCue
+    quantity: HabitQuantityProps,
+    schedule: ScheduleProps,
+    cue?: string
   ) {
     super(name, description, 'measured', schedule, cue, undefined);
-    this.quantity = quantity;
+    this.quantity = HabitQuantity.create(
+      quantity.amount,
+      quantity.unit,
+      quantity.targetType
+    );
   }
 
-  static create(
-    name: string,
-    description: string,
-    quantity: HabitQuantity,
-    schedule: HabitSchedule,
-    cue?: HabitCue
-  ): MeasuredHabit {
+  static create(props: MeasuredHabitProps): MeasuredHabit {
+    const { name, description, quantity, schedule, cue } = props;
+
     return new MeasuredHabit(name, description, quantity, schedule, cue);
   }
 
