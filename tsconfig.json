@@ -5,6 +5,8 @@
     "moduleResolution": "node",
     "lib": ["es2020", "dom"],
     "declaration": true,
+    "outDir": "./dist",
+    "rootDir": "./",
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -21,5 +23,5 @@
     "skipLibCheck": true,
     "typeRoots": ["./node_modules/@types"]
   },
-  "exclude": ["node_modules", "cdk.out", "test"]
+  "exclude": ["node_modules", "cdk.out", "test", "dist"]
 }

@@ -1,6 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
 import * as apiGateway from 'aws-cdk-lib/aws-apigateway';
-import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as logs from 'aws-cdk-lib/aws-logs';
 
@@ -19,7 +18,6 @@ export interface ApiProps extends ApiStackProps {
 
 export class Api extends Construct {
   private api: apiGateway.RestApi;
-  private role: iam.Role;
   private usagePlan: apiGateway.UsagePlan;
   private rootResource: apiGateway.Resource;
 
@@ -53,10 +51,6 @@ export class Api extends Construct {
 
     this.usagePlan.addApiStage({
       stage: this.api.deploymentStage
-    });
-
-    this.role = new iam.Role(this, `api-role`, {
-      assumedBy: new iam.ServicePrincipal('apigateway.amazonaws.com')
     });
   }
 

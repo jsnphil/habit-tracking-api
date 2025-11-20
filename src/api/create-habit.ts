@@ -4,6 +4,11 @@ import type { Habit } from '../domains/habit/models/habit';
 import { MeasuredHabit } from '../domains/habit/models/measured-habit';
 import { safeValidateCreateHabitPayload } from '../schemas/create-habit.schema';
 
+// TODO: Increase coverage thresholds in vite.config.ts when this file is fully tested
+// TODO: Add comprehensive error handling tests
+// TODO: Add integration tests with database
+// TODO: Test all validation scenarios and edge cases
+
 export const handler = async (
   event: APIGatewayEvent
 ): Promise<APIGatewayProxyResult> => {

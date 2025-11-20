@@ -1,3 +1,7 @@
+// TODO: Consider adding validation functions for these types if they become complex
+// TODO: Add unit tests if type utility functions are added
+// TODO: Remove 'src/domains/habit/types/**' exclusion from vite.config.ts if testable logic is added
+
 // Habit domain-specific types
 export type HabitType = 'completion' | 'measured';
 export type MeasuredTargetType = 'goal' | 'limit';

@@ -1,5 +1,9 @@
 import { z } from 'zod';
 
+// TODO: Add comprehensive tests for all schema validation functions
+// TODO: Test edge cases and error scenarios for better function coverage
+// TODO: Consider splitting this into smaller, more testable validation modules
+
 // Base enums from habit domain
 const FrequencyInterval = z.enum(['daily', 'weekly', 'custom']);
 const DayOfWeek = z.enum([

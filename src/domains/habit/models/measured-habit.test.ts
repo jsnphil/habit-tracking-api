@@ -1,7 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { HabitCue } from './habit-cue';
-import { HabitFrequency } from './habit-frequency';
-import { HabitSchedule } from './habit-schedule';
 import { MeasuredHabit } from './measured-habit';
 
 describe('MeasuredHabit', () => {
@@ -46,7 +43,6 @@ describe('MeasuredHabit', () => {
       const description = 'Limit screen time to 2 hours per day';
 
       const target = 'limit';
-      const cue = HabitCue.create('Evening');
       const habit = MeasuredHabit.create({
         name,
         description,
