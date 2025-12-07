@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: https://ccldf9gpt0.execute-api.us-east-1.amazonaws.com/dev/habit-tracking/habits/:habitId
+  url: https://{{aws.api.id}}.execute-api.us-east-1.amazonaws.com/{{aws.api.stage}}/habit-tracking/habits/:habitId
   body: none
   auth: none
 }
