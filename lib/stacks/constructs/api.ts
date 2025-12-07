@@ -3,8 +3,6 @@ import * as apiGateway from 'aws-cdk-lib/aws-apigateway';
 import { Construct } from 'constructs';
 import type { ApiStackProps } from '../habit-tracking-api-stack';
 
-import path = require('node:path');
-
 import {
   LambdaApiEndpoint,
   type LambdaApiEndpointProps
