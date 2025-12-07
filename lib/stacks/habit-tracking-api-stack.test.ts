@@ -1,6 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
-import { Template, Match } from 'aws-cdk-lib/assertions';
-import { beforeEach, describe, it, expect } from 'vitest';
+import { Match, Template } from 'aws-cdk-lib/assertions';
+import { beforeEach, describe, it } from 'vitest';
 import { HabitTrackingApiStack } from './habit-tracking-api-stack';
 
 describe('HabitTrackingApiStack', () => {
@@ -18,7 +18,7 @@ describe('HabitTrackingApiStack', () => {
 
     // Assert
     const template = Template.fromStack(stack);
-    
+
     template.hasResourceProperties('AWS::ApiGateway::RestApi', {
       Name: 'HabitTrackingApi-test',
       Description: 'Habit Tracking API for test'
@@ -31,7 +31,7 @@ describe('HabitTrackingApiStack', () => {
 
     // Assert
     const template = Template.fromStack(stack);
-    
+
     template.hasResourceProperties('AWS::ApiGateway::RestApi', {
       Name: 'HabitTrackingApi-dev',
       Description: 'Habit Tracking API for dev'
@@ -46,7 +46,7 @@ describe('HabitTrackingApiStack', () => {
 
     // Assert
     const template = Template.fromStack(stack);
-    
+
     template.hasResourceProperties('AWS::ApiGateway::ApiKey', {
       Name: 'habit-tracking-test-client',
       Description: 'API Key for habit-tracking-test-client'
@@ -61,17 +61,17 @@ describe('HabitTrackingApiStack', () => {
 
     // Assert
     const template = Template.fromStack(stack);
-    
+
     // Should have the root resource 'habit-tracking'
     template.hasResourceProperties('AWS::ApiGateway::Resource', {
       PathPart: 'habit-tracking'
     });
-    
+
     // Should have the 'habits' resource under habit-tracking
     template.hasResourceProperties('AWS::ApiGateway::Resource', {
       PathPart: 'habits'
     });
-    
+
     // Should have the '{habitId}' resource under habits
     template.hasResourceProperties('AWS::ApiGateway::Resource', {
       PathPart: '{habitId}'
@@ -86,27 +86,27 @@ describe('HabitTrackingApiStack', () => {
 
     // Assert
     const template = Template.fromStack(stack);
-    
+
     // Should have POST method for creating habits
     template.hasResourceProperties('AWS::ApiGateway::Method', {
       HttpMethod: 'POST'
     });
-    
+
     // Should have GET methods for reading habits (2 endpoints)
     template.hasResourceProperties('AWS::ApiGateway::Method', {
       HttpMethod: 'GET'
     });
-    
+
     // Should have DELETE method for deleting habits
     template.hasResourceProperties('AWS::ApiGateway::Method', {
       HttpMethod: 'DELETE'
     });
-    
+
     // Should have PATCH method for updating habits
     template.hasResourceProperties('AWS::ApiGateway::Method', {
       HttpMethod: 'PATCH'
     });
-    
+
     // Should have exactly 5 methods total (POST, 2xGET, DELETE, PATCH)
     template.resourceCountIs('AWS::ApiGateway::Method', 5);
   });
@@ -119,10 +119,10 @@ describe('HabitTrackingApiStack', () => {
 
     // Assert
     const template = Template.fromStack(stack);
-    
+
     // Should have 5 Lambda functions (one for each endpoint)
     template.resourceCountIs('AWS::Lambda::Function', 5);
-    
+
     // All Lambda functions should use Node.js 22.x runtime
     template.hasResourceProperties('AWS::Lambda::Function', {
       Runtime: 'nodejs22.x',
@@ -138,18 +138,18 @@ describe('HabitTrackingApiStack', () => {
 
     // Assert
     const template = Template.fromStack(stack);
-    
+
     // POST, DELETE, and PATCH methods should require API keys (3 methods)
     template.hasResourceProperties('AWS::ApiGateway::Method', {
       HttpMethod: 'POST',
       ApiKeyRequired: true
     });
-    
+
     template.hasResourceProperties('AWS::ApiGateway::Method', {
       HttpMethod: 'DELETE',
       ApiKeyRequired: true
     });
-    
+
     template.hasResourceProperties('AWS::ApiGateway::Method', {
       HttpMethod: 'PATCH',
       ApiKeyRequired: true
@@ -164,14 +164,14 @@ describe('HabitTrackingApiStack', () => {
 
     // Assert
     const template = Template.fromStack(stack);
-    
+
     template.hasResourceProperties('AWS::ApiGateway::UsagePlan', {
       Throttle: {
         RateLimit: 10,
         BurstLimit: 2
       }
     });
-    
+
     // Should have usage plan key that links API key to usage plan
     template.hasResourceProperties('AWS::ApiGateway::UsagePlanKey', {
       KeyType: 'API_KEY'
@@ -181,7 +181,7 @@ describe('HabitTrackingApiStack', () => {
   it('creates deployment with correct stage configuration', () => {
     // Arrange
     const environmentName = 'staging';
-    
+
     // Act
     const stack = new HabitTrackingApiStack(app, 'TestStack', {
       environmentName
@@ -189,7 +189,7 @@ describe('HabitTrackingApiStack', () => {
 
     // Assert
     const template = Template.fromStack(stack);
-    
+
     template.hasResourceProperties('AWS::ApiGateway::Stage', {
       StageName: environmentName,
       MethodSettings: Match.arrayWith([
@@ -214,22 +214,26 @@ describe('HabitTrackingApiStack', () => {
 
   it('handles different environment names correctly', () => {
     const environments = ['dev', 'staging', 'prod', 'test'];
-    
+
     environments.forEach((env, index) => {
       // Arrange - create fresh app and stack for each environment
       const testApp = new cdk.App();
-      const testStack = new HabitTrackingApiStack(testApp, `TestStack${index}`, { 
-        environmentName: env 
-      });
-      
+      const testStack = new HabitTrackingApiStack(
+        testApp,
+        `TestStack${index}`,
+        {
+          environmentName: env
+        }
+      );
+
       // Assert
       const template = Template.fromStack(testStack);
-      
+
       template.hasResourceProperties('AWS::ApiGateway::RestApi', {
         Name: `HabitTrackingApi-${env}`,
         Description: `Habit Tracking API for ${env}`
       });
-      
+
       template.hasResourceProperties('AWS::ApiGateway::Stage', {
         StageName: env
       });
@@ -244,10 +248,10 @@ describe('HabitTrackingApiStack', () => {
 
     // Assert
     const template = Template.fromStack(stack);
-    
+
     // Should have 5 log groups (one for each Lambda function)
     template.resourceCountIs('AWS::Logs::LogGroup', 5);
-    
+
     // All log groups should have one week retention
     template.hasResourceProperties('AWS::Logs::LogGroup', {
       RetentionInDays: 7
@@ -262,13 +266,13 @@ describe('HabitTrackingApiStack', () => {
 
     // Assert
     const template = Template.fromStack(stack);
-    
+
     // Each method should be integrated with its corresponding Lambda function
     // This is implicit in CDK when using LambdaIntegration, but we can verify
     // that all Lambda functions have the proper permissions
     // Note: CDK may create multiple permissions per Lambda for different API Gateway stages
     template.resourceCountIs('AWS::Lambda::Permission', 10);
-    
+
     // Each Lambda permission should be for API Gateway invoke
     template.hasResourceProperties('AWS::Lambda::Permission', {
       Action: 'lambda:InvokeFunction',
@@ -284,9 +288,10 @@ describe('HabitTrackingApiStack', () => {
 
     // Assert
     const template = Template.fromStack(stack);
-    
+
     // All Lambda functions should have PowerTools environment variables
-    template.hasResourceProperties('AWS::Lambda::Function', 
+    template.hasResourceProperties(
+      'AWS::Lambda::Function',
       Match.objectLike({
         Environment: Match.objectLike({
           Variables: Match.objectLike({
@@ -308,7 +313,7 @@ describe('HabitTrackingApiStack', () => {
 
     // Assert - Verify the complete resource counts for the stack
     const template = Template.fromStack(stack);
-    
+
     template.resourceCountIs('AWS::ApiGateway::RestApi', 1);
     template.resourceCountIs('AWS::ApiGateway::Resource', 3); // habit-tracking, habits, {habitId}
     template.resourceCountIs('AWS::ApiGateway::Method', 5); // POST, GET, GET, DELETE, PATCH

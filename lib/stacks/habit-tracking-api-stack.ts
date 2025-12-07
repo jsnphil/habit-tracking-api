@@ -3,7 +3,7 @@ import * as cdk from 'aws-cdk-lib';
 import type { Construct } from 'constructs';
 import { Api } from './constructs/api';
 
-import path = require('path');
+import path = require('node:path');
 
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
