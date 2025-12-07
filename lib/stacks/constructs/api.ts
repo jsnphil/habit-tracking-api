@@ -65,8 +65,6 @@ export class Api extends Construct {
   }
 
   public createResource(props: LambdaApiEndpointProps) {
-    const createHabitEndpoint = new LambdaApiEndpoint(this, props.id, props);
-
-    return createHabitEndpoint;
+    return new LambdaApiEndpoint(this, props.id, props);
   }
 }
