@@ -52,7 +52,7 @@ export class HabitTrackingApiStack extends cdk.Stack {
       id: 'DeleteHabitEndpoint',
       httpMethod: 'DELETE',
       apiResource: habitByIdResource,
-      source: path.join(__dirname, '../..', 'src/api', 'delete-habit.ts'),
+      source: path.join(__dirname, '../..', '/src/api/', 'delete-habit.ts'),
       apiKeyRequired: true
     });
 
