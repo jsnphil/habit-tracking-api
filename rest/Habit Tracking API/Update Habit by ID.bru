@@ -1,0 +1,21 @@
+meta {
+  name: Update Habit by ID
+  type: http
+  seq: 5
+}
+
+patch {
+  url: https://{{aws.api.id}}.execute-api.us-east-1.amazonaws.com/{{aws.api.stage}}/habit-tracking/habits/:habitId
+  body: none
+  auth: apikey
+}
+
+params:path {
+  habitId: habitId
+}
+
+auth:apikey {
+  key: X-Api-Key
+  value: {{apiKey}}
+  placement: header
+}

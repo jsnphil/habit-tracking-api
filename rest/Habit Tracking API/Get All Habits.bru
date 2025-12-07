@@ -1,17 +1,11 @@
 meta {
-  name: Create Habit
+  name: Get All Habits
   type: http
-  seq: 2
+  seq: 3
 }
 
-post {
+get {
   url: https://{{aws.api.id}}.execute-api.us-east-1.amazonaws.com/{{aws.api.stage}}/habit-tracking/habits
   body: none
-  auth: apikey
-}
-
-auth:apikey {
-  key: X-Api-Key
-  value: {{apiKey}}
-  placement: header
+  auth: none
 }

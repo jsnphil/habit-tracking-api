@@ -1,0 +1,15 @@
+meta {
+  name: Get Habit By ID
+  type: http
+  seq: 4
+}
+
+get {
+  url: https://ccldf9gpt0.execute-api.us-east-1.amazonaws.com/dev/habit-tracking/habits/:habitId
+  body: none
+  auth: none
+}
+
+params:path {
+  habitId: habitId
+}

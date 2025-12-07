@@ -1,16 +1,16 @@
 import * as cdk from 'aws-cdk-lib';
 import * as apiGateway from 'aws-cdk-lib/aws-apigateway';
-import * as lambda from 'aws-cdk-lib/aws-lambda-nodejs';
-import * as logs from 'aws-cdk-lib/aws-logs';
 
 import { Construct } from 'constructs';
-import type { LambdaApiEndpointProps } from '../../types/api-types';
 import type { ApiStackProps } from '../habit-tracking-api-stack';
 
 // biome-ignore lint/style/useNodejsImportProtocol: Needed to import path module
 import path = require('path');
 
-import { ARCHITECTURE, lambdaEnvironment } from '../../CDKConstructs';
+import {
+  LambdaApiEndpoint,
+  type LambdaApiEndpointProps
+} from './lambda-api-endpoint';
 
 export interface ApiProps extends ApiStackProps {
   // Define any additional properties needed for the API stack here
@@ -69,41 +69,8 @@ export class Api extends Construct {
   }
 
   public createResource(props: LambdaApiEndpointProps) {
-    const {
-      id,
-      method,
-      parentPath,
-      resourcePath,
-      apiKeyRequired,
-      lambdaProps
-    } = props;
-    const { source, environment, timeout, memorySize } = lambdaProps;
+    const createHabitEndpoint = new LambdaApiEndpoint(this, props.id, props);
 
-    const endpointFunction = new lambda.NodejsFunction(this, `${id}-Lambda`, {
-      entry: path.join(__dirname, '../../../src/api/', source),
-      handler: 'handler',
-      environment: {
-        ...lambdaEnvironment,
-        ...environment
-      },
-      timeout: cdk.Duration.seconds(timeout || 10),
-      memorySize: memorySize || 128,
-      architecture: ARCHITECTURE,
-      logRetention: logs.RetentionDays.ONE_WEEK
-    });
-
-    const endpointResource = parentPath.addResource(resourcePath);
-    endpointResource.addMethod(
-      method,
-      new apiGateway.LambdaIntegration(endpointFunction),
-      {
-        apiKeyRequired
-      }
-    );
-
-    return {
-      resource: endpointResource,
-      lambdaFunction: endpointFunction
-    };
+    return createHabitEndpoint;
   }
 }

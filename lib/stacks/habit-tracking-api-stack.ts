@@ -3,6 +3,8 @@ import * as cdk from 'aws-cdk-lib';
 import type { Construct } from 'constructs';
 import { Api } from './constructs/api';
 
+import path = require('path');
+
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export interface ApiStackProps extends cdk.StackProps {
@@ -21,22 +23,45 @@ export class HabitTrackingApiStack extends cdk.Stack {
 
     const rootResource = api.createRootResource('habit-tracking');
 
+    const habitsResource = rootResource.addResource('habits');
+    const habitByIdResource = habitsResource.addResource('{habitId}');
+
     api.createResource({
       id: 'CreateHabitEndpoint',
-      method: 'POST',
-      parentPath: rootResource,
-      resourcePath: 'create-habit',
+      httpMethod: 'POST',
+      apiResource: habitsResource,
       apiKeyRequired: true,
-      lambdaProps: {
-        source: 'create-habit.ts'
-      }
+      source: path.join(__dirname, '../..', '/src/api/', 'create-habit.ts')
     });
 
-    // The code that defines your stack goes here
+    api.createResource({
+      id: 'GetHabitByIdEndpoint',
+      httpMethod: 'GET',
+      apiResource: habitByIdResource,
+      source: path.join(__dirname, '../..', '/src/api/', 'get-habit.ts')
+    });
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'HabitTrackingApiQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    api.createResource({
+      id: 'GetAllHabitsEndpoint',
+      httpMethod: 'GET',
+      apiResource: habitsResource,
+      source: path.join(__dirname, '../..', '/src/api/', 'get-all-habits.ts')
+    });
+
+    api.createResource({
+      id: 'DeleteHabitEndpoint',
+      httpMethod: 'DELETE',
+      apiResource: habitByIdResource,
+      source: path.join(__dirname, '../..', '/src/api/', 'delete-habit.ts'),
+      apiKeyRequired: true
+    });
+
+    api.createResource({
+      id: 'UpdateHabitEndpoint',
+      httpMethod: 'PATCH',
+      apiResource: habitByIdResource,
+      source: path.join(__dirname, '../..', '/src/api/', 'update-habit.ts'),
+      apiKeyRequired: true
+    });
   }
 }
