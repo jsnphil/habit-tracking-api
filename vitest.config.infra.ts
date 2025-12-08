@@ -4,12 +4,13 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['src/**/*.test.ts', 'test/**/*.test.ts'],
-    exclude: ['lib/**/*.test.ts'],
+    include: ['lib/**/*.test.ts'],
+    exclude: ['src/**/*.test.ts'],
+    testTimeout: 30000, // CDK tests can be slower
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      include: ['src/**/*.ts'],
+      include: ['lib/**/*.ts'],
       exclude: [
         'node_modules/',
         'test/',
@@ -19,19 +20,16 @@ export default defineConfig({
         'bin/',
         '**/*.test.ts',
         '**/*.spec.ts',
-        'src/commands/**',
-        'src/domains/habit/types/**'
+        'lib/stacks/constructs/mock-handler.ts', // Test utility file
+        'lib/CDKConstructs.ts' // Constants file - no logic to test
       ],
+      reportsDirectory: './coverage/infrastructure',
       thresholds: {
+        statements: 80,
         branches: 70,
-        statements: 70,
-        functions: 70,
-        perFile: true,
-        '**/domains/habit/models/**': {
-          branches: 95,
-          statements: 95,
-          functions: 95
-        }
+        functions: 85,
+        lines: 80,
+        perFile: true
       },
       clean: true
     }

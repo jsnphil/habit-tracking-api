@@ -1,0 +1,15 @@
+meta {
+  name: Get Habit By ID
+  type: http
+  seq: 4
+}
+
+get {
+  url: https://{{aws.api.id}}.execute-api.us-east-1.amazonaws.com/{{aws.api.stage}}/habit-tracking/habits/:habitId
+  body: none
+  auth: none
+}
+
+params:path {
+  habitId: habitId
+}
